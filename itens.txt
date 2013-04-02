@@ -1,0 +1,20 @@
+review 1
+
+* incluir qual a taxa de amostragem dos arquivos WAV.
+* justificar os modelos testados
+* consertar figura: DspThread chama DspAlgorithm.
+* qual o uso da LiveActivity? O software pretende ser usaod para algo que não
+  o teste?
+* conclusões mais gerais: há fator determinante (cpu, versão da api?).
+* comparação com outros benchmarks.
+* encontrar uma referência melhor para citar sobre o filtro iir ao inves do
+  DAFX.
+
+review 2
+
+* info sobre os aparelhos: eram novos? quão ocupados estavam os dispositivos?
+  coletamos dados sobre idle workload?
+
+review 3
+
+* melhorar os graficos para melhor leitura.

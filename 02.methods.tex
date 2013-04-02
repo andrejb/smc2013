@@ -1,0 +1,317 @@
+%-----------------------------------------------------------------------------
+% __  __      _   _               _     
+%|  \/  | ___| |_| |__   ___   __| |___ 
+%| |\/| |/ _ \ __| '_ \ / _ \ / _` / __|
+%| |  | |  __/ |_| | | | (_) | (_| \__ \
+%|_|  |_|\___|\__|_| |_|\___/ \__,_|___/
+%-----------------------------------------------------------------------------
+
+\section{Methods}
+\label{sec:methods}
+
+In order to meet the needs for real time audio processing, the microcontroller
+has to be tweaked so we can capture, process and output analog audio. Each of
+these tasks can be performed in a variety of ways, and for this examination we
+chose to go with the basic functionalities of the platform.
+
+In this investigation, we used an Arduino Duemilanove with an ATmega328P
+microcontroller, a very modest version of the platform. It has an 8-bit RISC
+central processor, operates with a base frequency of 16~MHz, and has memory
+capacity of 32~KB for program storage and 2~KB for random access.
+
+\subsection{Microcontroller's elements}
+
+\setlength{\itemsep}{0em}
+
+To be able to know how to configure the platform to suit our needs, a general
+understanding of the inner workings of a microcontroller is needed. The Atmel
+Atmel megaAVR series microcontroller is comprised of several components, some
+of which are fundamental for our investigation and so will be briefly covered
+in this section.
+
+\subsubsection{Registers and interrupts}
+
+The microcontroller's CPU is comprised of an arithmetic logic unit that works
+with 32 registers -- portions of memory that provide data for computation as
+well as determine the execution flow of the program. An \emph{interrupt} is a
+deviation from the execution flow that can be triggered by a variety of events
+in the system, usually by setting values of different registers.
+
+In our case, interrupts are of extreme value as they are the low level
+structures that allow us to execute code with a somewhat fixed frequency (at
+least if we assume that the clock frequency is fixed in relation with real
+time).
+
+\subsubsection{Clocks}
+
+Clocks provide the frequencies in which the different parts of the
+microcontroller work. They are basically either emitters or dividers of square
+wave signals that provide the frequency of operation of the CPU, the ADC,
+the memory access, etc. Possible sources of clock frequencies are crystal
+and RC oscillators.
+
+A useful concept associated with clocks is the one of a \emph{prescaler}.
+Prescalers are dividers for clock frequencies that either actually lower the
+frequency of a clock or at least trigger specific interrupts on a power of two
+fraction of a clock's frequency.
+
+The \emph{system clock} provides the system's base frequency of operation. In
+our study, we make use of the system clock prescaler to control the PWM
+frequency that drives our DSP mechanism, as we will see in the section
+\ref{sec:pwm}. Another important clock is the \emph{I/O} clock used for
+feeding a frequency to most of the input/output mechanisms.
+
+\subsubsection{Input and output ports}
+
+Microcontrollers can receive and emit digital signal through I/O ports, which
+in the case of the the Arduino board are conveniently mounted in a way it is
+easy to plug other components and boards. These ports are read from and
+written to according to frequencies governed by the I/O, ADC or other
+indepedent clocks,
+
+
+
+\begin{itemize}
+    \item CPU: arithmetic unit and registrers (16~MHz - 8 bits).
+    \item Interruptions.
+    \item Memory: flash (32~KB), SRAM (2~KB), and EEPROM (1~KB).
+    \item System clocks (several sources, prescalers).
+    \item Power management.
+    \item Digital input/output ports.
+    \item Counters (with PWM support).
+    \item Serial interface.
+    \item ADC conversion.
+    \item Boot-loader and autoprogramming.
+\end{itemize}
+
+
+\subsection{Audio in: ADC}
+
+Rather than providing the microcontroller with digital data, our setup
+includes analog-to-digital conversion of audio input through the
+microcontroller's ADC pins.
+
+\begin{itemize}
+    \item Sample and hold.
+    \item Successive approximation.
+    \item resolution (8 or 10 bits)
+    \item Conversion time (13 - 250 $\mu$s).
+    \item Dedicated clock, noise reduction.
+    \item Automatic or manual conversion.
+\end{itemize}
+
+
+Measurement of conversion time, using different values for prescaler:
+
+\begin{center}
+\begin{tabular}{crrrr}
+\toprule
+\toprule
+\footnotesize{prescaler} & \footnotesize{$f_\text{ADC}$ (KHz)} &
+\footnotesize{$T_\text{ADC}$ ($\mu$s)} & \footnotesize{$\tilde{T}_\text{conv}$ ($\mu$s)} & \footnotesize{$\tilde{f}_\text{conv}$ ($\approx$Hz)} \\
+\midrule
+2 & 8.000 & 0,125 & 12,61 & 79.302\\
+4 & 4.000 & 0,25 & 16,06  & 62.266 \\
+%\rowcolor{grey}
+8 & 2.000 & 0,50 & 19,76  & 50.607 \\
+16& 1.000 & 1 & 20,52  & 48.732 \\
+32& 500 & 2 & 34,80  & 28.735 \\
+64& 250 & 3 & 67,89  & 14.729 \\
+128& 125 & 8 & 114,85 & 8.707  \\
+\bottomrule
+\end{tabular}
+\end{center}
+Obs:
+\begin{itemize}
+  \item The resolution of the \texttt{micros()} function is of 4~$\mu$s.
+  \item Conversion perido $\approx$ $14.5 \times T_\text{ADC}$. 
+  \item $R=44100$~Hz $\Rightarrow$ $T_\text{amostra} \approx 22.67~\mu$s.
+  \item $R=31250$~Hz $\Rightarrow$ $T_\text{amostra} = 32.00~\mu$s.
+\end{itemize}
+
+ADC parameter choice:
+
+\begin{itemize}
+    \item Left-aligned conversion (8 bits).
+    \item Prescaler equals to 8.
+\end{itemize}
+
+\subsection{Audio out: PWM}
+\label{sec:pwm}
+
+For outputting the result, PWM conversion is used, followed by a simple
+lowpass filter.
+
+PWM characteristics:
+
+\begin{itemize}
+    \item 6 output channels.
+    \item Different modes of operation (fast pwm and phase correct pwm).
+    \item prescaler.
+    \item Two 8-bit counters and one 16-bit counter.
+    \item Overflow interrupt.
+\end{itemize}
+
+\figura{pwmmeu}{0.40}{TODO: change captions.}
+%\figura{pwm2}{0.35}{TODO: change captions.}
+\figura{Pwm}{0.45}{TODO: change captions.}
+
+Explain how we use PWM interrupts to determine the frequency of operation of
+our DSP system (and other possibilities of how this could be done).
+
+Frequency of operation given an 8-bit counter and different values for
+prescaler:
+
+\begin{center}
+\begin{tabular}{crrrr}
+\toprule
+\toprule
+\footnotesize{prescaler} &
+\footnotesize{$f_\text{incr}$ (KHz)} &
+\footnotesize{$f_\text{overflow}$ (Hz)}  \\
+\midrule
+1 & 16.000 & 62.500 \\
+8 & 2.000 & 7.812 \\
+32 & 500 & 1.953 \\
+64 & 250 & 976 \\
+128 & 125 & 488 \\
+256 & 62,5 & 244 \\
+1024 & 15,625 & 61 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Chose parameters:
+
+\begin{itemize}
+  \item \emph{Fast PWM}.
+  \item 8-bit counter.
+  \item Prescaler value of 1.
+  \item Overflow frequency: 16~MHz / 1 / $2^8$ = 62500~Hz.
+  \item Sample generation frequency: 31250~Hz.
+\end{itemize}
+
+\subsection{Processing}
+
+\begin{lstlisting}
+/* 1. read from ADC input */
+x[ind] = ADCH;
+
+/* 2. write to PWM output */
+OCR2A = y[(ind-MIN_DELAY)&(BUFFER_SIZE-1)];
+
+// 3. signal availability of new sample block
+if ((ind & (BLOCK_SIZE - 1)) == 0) {
+  rind = (ind-BLOCK_SIZE) & (BUFFER_SIZE-1);
+  dsp_block = true;
+}
+
+/* 4. increment read/write buffer index */
+ind++;
+ind &= BUFFER_SIZE - 1;
+
+/* 5. start new ADC conversion */
+sbi(ADCSRA,ADSC); 
+\end{lstlisting}
+
+
+
+\subsection{Benchmarking}
+
+Once we have a way to input and output analog audio signals to and from the
+Arduino board, then we can start to experiment and measure the time it takes
+to perform common DSP routines in this environment.
+
+For real time purposes, there's a restriction for the ammount it takes to
+calculate samples' values and have them ready for playback. If the DSP block
+period is of $N$ samples and the sample rate is $R$~Hz, then the DSP cycle
+period is given by $T_{DSP}=\frac{N}{R}$ seconds.
+
+Some questions arise immediately from such a constraint:
+
+\begin{itemize}
+    \item What is the maximum amount of operations that can be carried in real
+    time?
+    \item Which implementation details make a difference?
+    \item What is the quality of the resulting audio signal?
+\end{itemize}
+
+\subsubsection{Additive synthesis}
+
+An additive synthesis is the process of constructing a more complex waveform
+by adding together several more basic waveforms (see Figure \ref{fig:add}).
+This technique has been widely used for synthesizing new sounds as well as
+resynthesizing signals after they went through some computational procedure.
+
+\figura{add}{0.20}{Additive synthesis.}
+
+
+The high level code for a simple additive synthesis can be seen below:
+
+\begin{lstlisting}[caption=Additive synthesis algorithm.]
+for (n = 0; n < N; n++)
+{
+  angle = 2.0 * M_PI * t;
+  y[n] = 0.0;
+  for (k = 0; k < numFreqs; k++)
+    y[n] += r[k]*sin(f[k] * angle);
+  t += 1.0 / SR;
+}
+\end{lstlisting}
+
+\subsubsection{Time-domain convolution}
+
+Frequency-domain multiplication of spectra correspond to time-domain
+convolution of signals, and such an operation allows for frequency filtering.
+The time-domain implementation of convolution is a widely used technique in
+many computer music algorithms and the general scheme can be seen in Figure
+\ref{fig:FIR_Filter}.
+
+\figura{FIR_Filter}{0.35}{TODO: change caption}
+
+The high-level code for a time-domain convolution is:
+
+\begin{lstlisting}
+for (k = 0; k < N; k++)
+  y[n] += b[k]*x[n-k];
+\end{lstlisting}
+
+\subsubsection{Fast Fourier Transform}
+
+The Fast Fourier Transform (FFT) is a clever implementation of the traditional
+Fourier Transform that brings its complexity down from $O(n^2)$ to
+$O(n\log(n))$, where $n$ is the number of time-domain digital samples or,
+equivalently, the number of frequency bins that describe the frequency
+spectrum of the signal after the Transform computation. The FFT algorithm
+takes advantage of redundancy and symetry on intermediary steps of the
+calculation and is used in many signal processing algorithms (see Figure
+\ref{fig:butterfft}).
+
+%-----------------------------------------------------------------------------
+%\figura{./img/fft1.pdf}{0.35}{TODO: change caption}
+
+
+\figura{butterfft}{0.35}{The FFT uses a divide-and-conquer approach and saves
+intermediate results to accelerate the calculation of a signal spectrum. The
+figure shows one step of an 8-point FFT calculation and how the results map to
+frequency bins.}
+%-----------------------------------------------------------------------------
+
+\subsubsection{Benchmarking}
+
+Each of the algorithms mentioned in the last sections have different
+computational costs in terms of number of integer and floating-point
+operations, and quantity of memory reads and writes (and amount of memory
+accessed in each of these operations). 
+
+In the context of real time audio processing in the Arduino, the algorithms mentioned above
+bring natural questions regarding feasibility of processing:
+
+\begin{itemize}
+  \item Additive synthesis: what is the maximum number of oscillators that can
+  be used to compute a new waveform in real time?
+  \item Time-domain convolution: what is the maximum length of a filter that
+  can be applied to an audio signal in real time?
+  \item FFT: what is the maximum length of an FFT that can be computed in real time?
+\end{itemize}
+

@@ -1,0 +1,127 @@
+----------------------- REVIEW 1 --------------------- PAPER: 167 TITLE: On
+the performance of real-time DSP on Android devices AUTHORS: André J. Bianchi
+and Marcelo Queiroz
+
+OVERALL RATING: 0 (borderline paper) REVIEWER'S CONFIDENCE: 2 (medium)
+
+The paper describes a benchmarking app for Android devices aiming at measuring
+the devices' capabilities concerning audio signal processing tasks. The
+workflow of the application and the benchmark results are given for 10
+devices.
+
+While it is interesting to get an impression of what kind of DSP algorithms
+are able to run on current Android devices the presented work has some flaws.
+Most important the sampling rate of the used audio material is not given.
+Without this piece of information one cannot relate the processing times on a
+block to the playing duration of this block (i.e., cannot tell if a real-time
+processing is possible). This is especially relevant for the stress test.
+
+
+Also, the methodology seems somehow heuristic and reminds me of hardware
+evaluations in computer magazines. From a scientific paper I would expect
+
+- to also justify the selection of devices From "most of the devices available
+  for our experiment were of strict personal use" I infer that instead of
+  deciding on a representative sample of current devices the authors have used
+  their personal devices.
+
+- and (more important) to draw more general conclusions.  The main conclusion
+  one can draw from this paper is that, given the described algorithms,
+  certain devices perform better than others. It would be interesting to see
+  if there is a determining factor for the performance (CPU speed, API
+  level?). Also, the authors should relate their results to other benchmarks
+  for which results are available for a larger set of devices.
+
+
+Some minor issues:
+
+Sec. 1) sistematic => systematis Sec. 1) real time DSP object-oriented model
+=> object-oriented real time DSP model Footnote 3) 2^13 => 2^{13} Sec. 2)  and
+DSP block size => and the DSP block size Sec. 2) DSP algorithm execution time
+and DSP callback period => DSP algorithm execution times, and DSP callback
+periods Sec. 2.1) What is the usage of the LiveActivity class? Is the app also
+intended for other purposes than performance testing?  Sec. 2.1) In the
+sequence diagram the DspAlgorithm class is called by the AudioStream class -
+in the text it says that it is scheduled by the DspThread.  Sec. 2.1) can be
+periodically output as strings of values over Wi-Fi, bluetooth or writing to a
+file => can be periodically output as strings of values over Wi-Fi or
+bluethooth as well as written to a file Sec. 3.2) Each line gives the the
+maximum => the maximum
+
+Sec. 2.1) Reference [3], i.e., the entire proceedings of the Dafx 2002
+conference is not a good reference describing an IIR filter. A signal
+processing primer should be cited instead.
+
+
+----------------------- REVIEW 2 --------------------- PAPER: 167 TITLE: On
+the performance of real-time DSP on Android devices AUTHORS: André J. Bianchi
+and Marcelo Queiroz
+
+OVERALL RATING: 2 (accept) REVIEWER'S CONFIDENCE: 2 (medium)
+
+This paper provides technical evaluation of applicability of DSP algorithms
+within a framework of Android OS for mobile phones. A number of mobile phones
+are employed for experimental evaluation. An android application to access
+workload of Java-based DSP algorithms is proposed and developed by the
+authors. The conducted evaluation provides upper bound of workload.
+
+This is an interesting study, as no evaluations were presented before on the
+question of how well will DSP algorithms manage with real-time conditions on
+Android platform. The conducted evaluation is thoroughly done. It shows that
+the majority of considered mobile phones are actually able to manage with DSP
+algorithms, at least simple ones. As authors mention multi-threading, it would
+be interesting to know the state of tested devices: where they new or not, how
+busy were devices with other running applications? Did authors collect any
+data on idle workload of tested devices?
+
+I think this study is worth presenting at SMC and it will probably inspire
+developers, scientists and artists to create novel sound/music apps on Android
+platform. The main contribution of the authors is a developed application.
+
+Minor comments: All references to tables and sections should be start from a
+capital letter, e.g., Figure 3 or Section 3.  Page 4: "evice performance" -
+misspell?
+
+
+----------------------- REVIEW 3 --------------------- PAPER: 167 TITLE: On
+the performance of real-time DSP on Android devices AUTHORS: André J. Bianchi
+and Marcelo Queiroz
+
+OVERALL RATING: 3 (strong accept) REVIEWER'S CONFIDENCE: 4 (expert)
+
+The article introduces a software for the measurement of real-time dsp
+performance aspects of Android devices and gives some achieved benchmark
+results. The largest section of the contribution "2. Methods" describes the
+class architecture and the corresponding possible "modes of use" of the
+software, as well as the choice of three dsp algorithms selected by the
+authors for representative, comparative performance measurements on ten
+different Android devices with different processing hardware and versions of
+the Android API. It also reports the strategy used for deriving a benchmark
+for the maximum number of FIR filter coefficients that the various devices are
+able to apply in real-time at different sizes of processing buffers.  Results
+of these tests are reported in section 3 (titled accordingly) in graphical
+representations and discussed in the accompanying text.
+
+I consider this contribution very useful as a guideline for Android developers
+planning on implementing sound processing algorithms in real-time applications
+on mobile devices. By making their code available under free software licence
+(as the authors of the article promise to do) the work will be of long-term
+value also beyond the interest of their currently gained performance values
+(i.e. when the used current hardware might be outdated). The article is well
+structured, understandable and pleasant to read.
+
+
+Minor remarks and suggestions:
+
+Abstract, last third - "This work presents an object oriented model..., and
+focus on" -> ...focusses on...  Introduction, second phrase - "sistematic" ->
+systematic...  Introduction, first phrase in second column - "...Android OS -
+and his fully free software..." -> ...its fully free...  Subsection 2.4.,
+third paragraph - "evice" -> device
+
+The graphs in figures 4-7 might be optimized for better readability. This
+should be considered in particular since the article in its current form spans
+6.5 pages and, if included in the proceedings will in any case occupy 7,
+possibly 8 pages, which leaves some space for larger graphics.
+
+

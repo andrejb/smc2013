@@ -1,0 +1,173 @@
+%-----------------------------------------------------------------------------
+% header
+%-----------------------------------------------------------------------------
+\input{header}
+
+%-----------------------------------------------------------------------------
+% journal specific commands
+%-----------------------------------------------------------------------------
+
+%user defined variables
+\def\papertitle{Real time digital audio processing using Arduino}
+\def\firstauthor{André Jucovsky Bianchi}
+\def\secondauthor{Marcelo Queiroz}
+\def\thirdauthor{Third author}
+
+%-----------------------------------------------------------------------------
+% Dados do trabalho
+%\title{}
+%\author{André Jucovsky Bianchi \\
+%\small{Departamento de Ciência da Computação \\
+%Instituto de Matemática e Estatística \\
+%Universidade de São Paulo \\
+%\texttt{ajb@ime.usp.br}}}
+
+\newif\ifpdf
+\ifx\pdfoutput\relax
+\else
+   \ifcase\pdfoutput
+      \pdffalse
+   \else
+      \pdftrue
+\fi
+
+\ifpdf % compiling with pdflatex
+  \usepackage[pdftex,
+    pdftitle={\papertitle},
+    pdfauthor={\firstauthor, \secondauthor, \thirdauthor},
+    bookmarksnumbered, % use section numbers with bookmarks
+    pdfstartview=XYZ % start with zoom=100% instead of full screen; 
+                     % especially useful if working with a big screen :-)
+   ]{hyperref}
+  %\pdfcompresslevel=9
+
+  \usepackage[pdftex]{graphicx}
+  % declare the path(s) where your graphic files are and their extensions so 
+  %you won't have to specify these with every instance of \includegraphics
+  \graphicspath{{./img/}}
+  \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
+
+  \usepackage[figure,table]{hypcap}
+
+  \usepackage{epstopdf}
+
+\else % compiling with latex
+  \usepackage[dvips,
+    bookmarksnumbered, % use section numbers with bookmarks
+    pdfstartview=XYZ % start with zoom=100% instead of full screen
+  ]{hyperref}  % hyperrefs are active in the pdf file after conversion
+
+  \usepackage[dvips]{epsfig,graphicx}
+  % declare the path(s) where your graphic files are and their extensions so 
+  %you won't have to specify these with every instance of \includegraphics
+  \graphicspath{{./img/}}
+  \DeclareGraphicsExtensions{.eps}
+
+  \usepackage[figure,table]{hypcap}
+\fi
+
+%setup the hyperref package - make the links black without a surrounding frame
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+
+% Title.
+% ------
+\title{\papertitle}
+
+% Authors
+% Please note that submissions are NOT anonymous, therefore 
+% authors' names have to be VISIBLE in your manuscript. 
+%
+% Single address
+% To use with only one author or several with the same address
+% ---------------
+%\oneauthor
+%   {\firstauthor} {Affiliation1 \\ %
+%     {\tt \href{mailto:author1@smcnetwork.org}{author1@smcnetwork.org}}}
+
+%Two addresses
+%--------------
+\twoauthors
+  {\firstauthor} {Computer Science Department \\
+                  University of São Paulo \\ %
+    {\tt \href{mailto:ajb@ime.usp.br}{ajb@ime.usp.br}}}
+  {\secondauthor} {Computer Science Department \\
+                  University of São Paulo \\ %
+    {\tt \href{mailto:mqz@ime.usp.br}{mqz@ime.usp.br}}}
+
+% Three addresses
+% --------------
+% \threeauthors
+%   {\firstauthor} {Affiliation1 \\ %
+%     {\tt \href{mailto:author1@smcnetwork.org}{author1@smcnetwork.org}}}
+%   {\secondauthor} {Affiliation2 \\ %
+%     {\tt \href{mailto:author2@smcnetwork.org}{author2@smcnetwork.org}}}
+%   {\thirdauthor} { Affiliation3 \\ %
+%     {\tt \href{mailto:author3@smcnetwork.org}{author3@smcnetwork.org}}}
+
+%-----------------------------------------------------------------------------
+% Document
+\begin{document}
+
+%
+\capstartfalse
+\maketitle
+\capstarttrue
+
+%
+% sumário
+%\tableofcontents
+
+\maketitle
+
+\begin{abstract}
+
+% contexto do trabalho
+% problema que resolve
+% por que é um problema interessante
+% quais as consequências
+
+In the search for low-cost, highly available devices for real time audio
+processing for scientific or artistic purposes, the Arduino platform comes in
+as a handy alternative as a chordless, versatile audio processor. Despite the
+fact that Arduinos are generally used for controlling and interfacing with
+other devices, its builtin ADC/DAC allows for capturing and emitting raw audio
+signals with very specific constraints. In this work we dive into the
+microcontroller's structure to understand what can be done and what are the
+limits of the platform when working with real time digital signal processing.
+We evaluate the behaviour of some common DSP algorithms and expose limitations
+and possibilities of using the platform in this context.
+
+
+\end{abstract}
+
+\input{01.introduction}
+\input{02.methods}
+\input{03.results}
+\input{04.discussion}
+
+\section{Acknowledgements}
+
+We would like to thank the members of the Computer Music
+Group\footnote{http://compmus.ime.usp.br/en/} of the Computer Science
+Department of the Institute of Mathematics and Statistics of the University of
+São Paulo. This work has been supported by the funding agencies CAPES and
+FAPESP (grant 2008/08632-8).
+
+%-----------------------------------------------------------------------------
+% Glossário
+%\printglossaries
+
+% Bibliografia
+%\bibliographystyle{abnt-alf}
+\nocite{*}
+%\bibliographystyle{IEEEtranS}
+%\bibliographystyle{plain}
+%\bibliography{references}
+
+\end{document}

@@ -1,0 +1,170 @@
+%-----------------------------------------------------------------------------
+% cabeçalho
+%-----------------------------------------------------------------------------
+\documentclass{beamer}
+
+% para criar um documento para acompanhamento, comente a linha acima e
+% descomente as linhas abaixo.
+%\documentclass[handout]{beamer}
+%\usepackage{pgfpages}
+%\pgfpagesuselayout{4 on 1}[a4paper,border shrink=5mm]
+
+
+% localização
+\usepackage[utf8x]{inputenc}
+\usepackage[brazil]{babel}
+%\usepackage{abntex}
+
+% embelezamento
+\usepackage{amssymb,amsmath,amsfonts}
+\numberwithin{equation}{section}
+\usepackage{enumerate}
+\usepackage{xspace}
+%\usetheme{Goettingen} % <---- so com crane
+%\usetheme{sidebar}   % <---- com crane fica bom
+%\usecolortheme{crane} % <---- Goettingen com crane
+\usepackage{colortbl}
+\usepackage{url}
+%\usepackage{color}
+\usepackage{listings}
+\usepackage{color}
+
+\usepackage{booktabs}
+ 
+\definecolor{dkgreen}{rgb}{0,0.4,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\definecolor{LightCyan}{rgb}{0.7,0.9,0.9}
+ 
+\lstset{ %
+  language=C,                % the language of the code
+  basicstyle=\ttfamily\footnotesize,           % the size of the fonts that are used for the code
+  numbers=left,                   % where to put the line-numbers
+  numberstyle=\tiny\color{gray},  % the style that is used for the line-numbers
+  stepnumber=1,                   % the step between two line-numbers. If it's 1, each line 
+                                  % will be numbered
+  numbersep=5pt,                  % how far the line-numbers are from the code
+  backgroundcolor=\color{white},      % choose the background color. You must add \usepackage{color}
+  showspaces=false,               % show spaces adding particular underscores
+  showstringspaces=false,         % underline spaces within strings
+  showtabs=false,                 % show tabs within strings adding particular underscores
+%  frame=single,                   % adds a frame around the code
+  rulecolor=\color{black},        % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. commens (green here))
+  tabsize=2,                      % sets default tabsize to 2 spaces
+  captionpos=b,                   % sets the caption-position to bottom
+  breaklines=false,                % sets automatic line breaking
+  breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+  title=\lstname,                   % show the filename of files included with \lstinputlisting;
+                                  % also try caption instead of title
+  keywordstyle=\color{blue},          % keyword style
+  commentstyle=\color{dkgreen},       % comment style
+  stringstyle=\color{mauve},         % string literal style
+  escapeinside={\%*}{*)},            % if you want to add a comment within your code
+  morekeywords={*,...}               % if you want to add more keywords to the set
+}
+
+% figuras
+%\usepackage{tikz}
+%\usetikzlibrary{arrows}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{textpos}
+\graphicspath{./img/}
+
+
+% Sumário no início de cada seção
+%\AtBeginSection[]
+%{
+%  \begin{frame}<beamer>{Estrutura da apresentação}
+%    \tableofcontents[currentsection]
+%  \end{frame}
+%}
+
+% Sumário no início de cada subseção
+\AtBeginSubsection[]
+{
+  \begin{frame}<beamer>{Estrutura da apresentação}
+    \footnotesize
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+
+% comandos
+\definecolor{meuvermelho}{RGB}{200,40,40}
+\definecolor{meuazul}{RGB}{40,40,140}
+\newcommand{\enfasev}[1]{{\color{meuvermelho}#1}}
+\newcommand{\enfase}[1]{{\color{meuazul}#1}}
+\newcommand{\enfaseg}[1]{{\color{dkgreen}#1}}
+\newcommand{\W}[1]{\ensuremath{W_N^{#1}}}
+\newcommand{\sumfty}{\ensuremath{\sum_{m=-\infty}^{\infty}}}
+\newcommand{\sumnmu}{\ensuremath{\sum_{k=0}^{N-1}}}
+
+%-----------------------------------------------------------------------------
+% Dados para o primeiro slide
+%-----------------------------------------------------------------------------
+
+\title
+{Processamento digital de sinais em tempo real utilizando Arduino}
+
+%\subtitle
+%{}
+
+\author
+{André Jucovsky Bianchi \\
+\footnotesize{ajb@ime.usp.br}}
+
+\institute
+[Universidade de São Paulo]
+{
+  Departamento de Ciência da Computação\\
+  Instituto de Matemática e Estatística \\
+  Universidade de São Paulo
+}
+
+\date{\today}
+
+
+%-----------------------------------------------------------------------------
+% Documento
+%-----------------------------------------------------------------------------
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+
+% Since this a solution template for a generic talk, very little can
+% be said about how it should be structured. However, the talk length
+% of between 15min and 45min and the theme suggest that you stick to
+% the following rules:  
+
+% - Exactly two or three sections (other than the summary).
+% - At *most* three subsections per section.
+% - Talk about 30s to 2min per frame. So there should be between about
+%   15 and 30 frames, all told.
+
+\begin{frame}<beamer>{Estrutura da apresentação}
+\footnotesize
+\tableofcontents
+\end{frame}
+
+%-----------------------------------------------------------------------------
+% Seções
+%-----------------------------------------------------------------------------
+\input{01.intro}
+\input{02.methods}
+\input{03.results}
+\input{04.conclusion}
+
+
+%-----------------------------------------------------------------------------
+% Bibliografia
+%-----------------------------------------------------------------------------
+%\begin{frame}{Bibliografia}
+%\bibliographystyle{abnt-alf}
+%\bibliography{references}
+%\end{frame}
+
+\end{document}

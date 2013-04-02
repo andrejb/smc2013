@@ -1,0 +1,7 @@
+\frametitle {Fast Fourier Transform}Código em altíssimo nível:
+\begin{lstlisting}
+four1(x, N, 1); /* O(N*log(N)) */
+\end{lstlisting}
+\begin{itemize}
+  \item Qual é o tamanho máximo de uma FFT computável em tempo real?
+\end{itemize}

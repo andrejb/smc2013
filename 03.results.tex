@@ -1,0 +1,111 @@
+%-----------------------------------------------------------------------------
+% ____                 _ _       
+%|  _ \ ___  ___ _   _| | |_ ___ 
+%| |_) / _ \/ __| | | | | __/ __|
+%|  _ <  __/\__ \ |_| | | |_\__ \
+%|_| \_\___||___/\__,_|_|\__|___/
+%-----------------------------------------------------------------------------
+
+\section{Results}
+\label{sec:results}
+
+%-----------------------------------------------------------------------------
+%     _       _     _ _ _   _             ____              _   _     
+%    / \   __| | __| (_) |_(_)_   _____  / ___| _   _ _ __ | |_| |__  
+%   / _ \ / _` |/ _` | | __| \ \ / / _ \ \___ \| | | | '_ \| __| '_ \ 
+%  / ___ \ (_| | (_| | | |_| |\ V /  __/  ___) | |_| | | | | |_| | | |
+% /_/   \_\__,_|\__,_|_|\__|_| \_/ \___| |____/ \__, |_| |_|\__|_| |_|
+%                                               |___/
+%-----------------------------------------------------------------------------
+
+\subsection{Additive synthesis}
+
+\figura{./img/operations-128-31250.pdf}{0.35}{Type and number of operations
+make a difference.}
+
+\figura{./img/sinesum-comparison.pdf}{0.35}{Results for blocks of different
+sizes.}
+
+\figura{./img/sinesum-comparison-for.pdf}{0.35}{Results for blocks of different
+sizes.}
+
+\figura{./img/frequencies-128-1.pdf}{0.35}{Results for different sample rates.}
+
+Result summary:
+
+\begin{center}
+\begin{tabular}{rcccc}
+\toprule
+\toprule
+block size  & 2op & 1op & pad+for & pad \\
+\midrule
+32  & 2 & 4 & 8 & 14 \\
+64  & 2 & 4 & 8 & 14 \\
+128 & 2 & 4 & 8 & 15 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+%-----------------------------------------------------------------------------
+%   ____                      _       _   _             
+%  / ___|___  _ ____   _____ | |_   _| |_(_) ___  _ __  
+% | |   / _ \| '_ \ \ / / _ \| | | | | __| |/ _ \| '_ \ 
+% | |__| (_) | | | \ V / (_) | | |_| | |_| | (_) | | | |
+%  \____\___/|_| |_|\_/ \___/|_|\__,_|\__|_|\___/|_| |_|
+%                                                       
+%-----------------------------------------------------------------------------
+
+\figura{./img/convolution-comparison-cpad.pdf}{0.35}{TODO: change caption}
+
+{Convolução no domínio do tempo}{Resultados para blocos de diferentes tamanhos}
+
+\figura{./img/convolution-comparison-vpad.pdf}{0.35}{TODO: change caption}
+
+\figura{./img/convolution-comparison-mult.pdf}{0.35}{TODO: change caption}
+
+Ordem máxima do filtro FIR em cada cenário ($R=31.250$~Hz):
+
+\begin{center}
+\begin{tabular}{rccc}
+\toprule
+\toprule
+\footnotesize{block size}  & \footnotesize{multiplicação} & \footnotesize{pad variável} & \footnotesize{pad constante} \\
+\midrule
+32  & 1 & 7 & 13 \\
+64  & 1 & 7 & 13 \\
+128 & 1 & 7 & 14 \\
+256 & 1 & 7 & 14 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%-----------------------------------------------------------------------------
+{Exemplo: moving average}
+\figura{./img/moving.pdf}{0.35}{TODO: change caption}
+
+
+%-----------------------------------------------------------------------------
+%  _____ _____ _____ 
+% |  ___|  ___|_   _|
+% | |_  | |_    | |  
+% |  _| |  _|   | |  
+% |_|   |_|     |_|  
+%
+%-----------------------------------------------------------------------------
+
+
+\figura{./img/fft.pdf}{0.35}{TODO: change caption}
+
+%-----------------------------------------------------------------------------
+Determinação de frequência máxima:
+\begin{itemize}
+  \item Média de 428,15~$\mu$s por amostra.
+  \item Frequência máxima $\approx$ 2.335~Hz.
+  \item Pré-escalonador PWM de 32 $\Rightarrow$ $R=1.953$~Hz.
+\end{itemize}
+%-----------------------------------------------------------------------------
+
+\figura{./img/fft2.pdf}{0.35}{TODO: change caption}
+
+

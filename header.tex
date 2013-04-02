@@ -1,0 +1,125 @@
+%-----------------------------------------------------------------------------
+% general document control
+%\documentclass[11pt,a4paper,notitlepage]{article}
+%\documentclass[journal]{ieeetr}
+
+% journal specifics
+\documentclass{article}
+\usepackage{smc2012} 
+\usepackage{times}
+\usepackage{ifpdf}
+\usepackage[english]{babel}
+\usepackage{cite}
+%\usepackage{mathptmx} 
+
+% section counter
+%\setcounter{secnumdepth}{1} 
+
+% localization
+\usepackage[utf8x]{inputenc}
+%\usepackage[brazil]{babel}
+%\usepackage{abntex}
+
+
+% glossary
+%\usepackage{glossaries}
+%\makeglossaries
+%\input{glossario}
+
+% bibliography
+%\usepackage[colorlinks,citecolor=blue,urlcolor=brown]{hyperref}
+%\usepackage[alf]{abntcite}
+%\usepackage[square,comma]{natbib}
+%\usepackage[fixlanguage]{babelbib}
+%\selectbiblanguage{portugues}
+
+
+% embellishment
+\usepackage{amssymb,amsmath,amsfonts}
+\usepackage{booktabs}
+%\numberwithin{equation}{section}
+%\usepackage{enumerate}
+%\usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
+%\usepackage{xspace}
+%\usepackage{colortbl}
+%\usepackage{caption}
+%\usepackage{mathdots}
+%\usepackage{fancyhdr}
+\usepackage{enumitem}
+\setlist{nolistsep}
+
+
+% figures
+%\usepackage{graphicx}
+%\usepackage{epsfig}
+
+% math
+\usepackage{amsthm}
+
+
+%\usepackage{epstopdf}
+%\usepackage[figure,table]{hypcap}	% corrects the hyper-anchor of figures/tables
+
+% todo
+%\usepackage[bordercolor=white,backgroundcolor=yellow!30,linecolor=black,colorinlistoftodos]{todonotes}
+%\newcommand{\lembrete}[1]{\todo[color=cyan!20,inline]{\ensuremath{\rhd} #1}}
+
+
+% new commands
+%\newcommand{\FFT}{\texttt{FFT}\xspace}
+%\newtheorem{definicao}{Definição}
+%\newtheorem{exemplo}{Exemplo}
+%\newtheorem{problema}{Problema}
+%\newtheorem{algoritmo}{Algoritmo}
+%\newtheorem{sistema}{Sistema}
+\newcommand{\jclass}[1]{\texttt{\textmd{#1}}}
+
+% hiphenation
+\hyphenation{a-mount}
+
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.4,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\definecolor{LightCyan}{rgb}{0.7,0.9,0.9}
+ 
+\lstset{ %
+  language=C,                % the language of the code
+  basicstyle=\ttfamily\footnotesize,           % the size of the fonts that are used for the code
+  %numbers=left,                   % where to put the line-numbers
+  numberstyle=\tiny,%\color{gray},  % the style that is used for the line-numbers
+  stepnumber=1,                   % the step between two line-numbers. If it's 1, each line 
+                                  % will be numbered
+  numbersep=5pt,                  % how far the line-numbers are from the code
+  %backgroundcolor=\color{white},      % choose the background color. You must add \usepackage{color}
+  showspaces=false,               % show spaces adding particular underscores
+  showstringspaces=false,         % underline spaces within strings
+  showtabs=false,                 % show tabs within strings adding particular underscores
+  frame=single,                   % adds a frame around the code
+  %rulecolor=\color{black},        % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. commens (green here))
+  tabsize=2,                      % sets default tabsize to 2 spaces
+  captionpos=b,                   % sets the caption-position to bottom
+  breaklines=false,                % sets automatic line breaking
+  breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+  title=\lstname,                   % show the filename of files included with \lstinputlisting;
+                                  % also try caption instead of title
+  %keywordstyle=\color{blue},          % keyword style
+  %commentstyle=\color{dkgreen},       % comment style
+  %stringstyle=\color{mauve},         % string literal style
+  escapeinside={\%*}{*)},            % if you want to add a comment within your code
+  morekeywords={*,...},               % if you want to add more keywords to the set
+  %xleftmargin=1em,
+}
+
+
+\newcommand{\figura}[3]{
+\begin{figure}
+\begin{center}
+\includegraphics[width=#2\textwidth]{#1}
+\caption{#3}
+\label{fig:#1}
+\end{center}
+\end{figure}
+}
