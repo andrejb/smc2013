@@ -20,14 +20,63 @@
 
 \subsection{Additive synthesis}
 
-\figura{./img/operations-128-31250.pdf}{0.35}{Type and number of operations
-make a difference.}
+The first experiment tries to answer the question of how many oscillators can
+be used when performing real time additive sinthesis inside the platform. In
+the beginning of the DSP cycle, an additive synthesis algorithm is run using a
+determined number of oscillators and the mean of the synth time is taken over
+ten million measurements. Block sizes used had 32, 64 and 128 samples (more
+showed to be infeasible in real time) and the number of oscillators was
+increased until the DSP cycle period was exceeded.
 
-\figura{./img/sinesum-comparison.pdf}{0.35}{Results for blocks of different
+The first result has to do with the use of loop structures. Because looping
+usually requires incrementing and testing a variable in each iteration, the
+use of one loop structure may have strong influence in the amount of
+oscillators that can be used in real time for additive synthesis inside the
+Arduino.  Figures \ref{fig:sinesum-comparison-for} and
+\ref{fig:sinesum-comparison} show the amount of oscilators feasible by,
+respectivelly, making use of a loop and making use of inline code. By removing
+loops we were able to jump from 8 oscillators to at least 13, or 14 in the
+case of block size of 128 samples.
+
+\figura{sinesum-comparison}{0.35}{Results for blocks of different
 sizes.}
 
-\figura{./img/sinesum-comparison-for.pdf}{0.35}{Results for blocks of different
+\figura{sinesum-comparison-for}{0.35}{Results for blocks of different
 sizes.}
+
+In any DSP algorithm that works over a block of samples there may be at least
+one loop structure: the one that loops over all samples of the block. It could
+be eliminated but the cost of doing so would implicate having to recompile the
+code to change the length of the block, which is highly inconvenient. We apply
+the same rationale to the algorithms implemented in the experiments, and
+therefore we make use of loop structures, although the least we can. That has
+the good side-effect of allowing us to run experiments by variating parameters
+values dinamically.
+
+While implementing this experiment, a first attempt was made using the
+standard API \texttt{sin()} function. As that showed to be infeasible in real
+time, we focused on table lookup implementations. At this point we noticed
+that even the smallest implementation difference can have large impact on the
+results. Therefore, we decided to test and plot the results for different
+numbers and types of operations.
+
+Two parameters are used to calculate the value of each oscillator: phase and
+amplitude. Phase is handled by updating the index for sine table reads, and
+then the amplitude has to be multiplied by the value obtained by the lookup.
+We implemented 3 different ways of multiplying the amplitude: (1) 2
+multiplications, (2) 1 multiplication, (3) variable pad.
+% TODO: epxlicar melhor acima.
+Figure \ref{fig:operations-128-31250} shows the time taken by the calculation
+of the additive synthesis algorithm for different number of oscillators using
+the different types of operations. By making use of lower level operations
+that might achieve less precise results we were able to raise the number of
+oscillators from 3 (when using 2 multiplications) to 15 (when using a variable
+pad).
+
+\figura{operations-128-31250}{0.35}{Time taken for synthesis
+algorithm using different operations and variable number of oscillators.}
+
+
 
 \figura{./img/frequencies-128-1.pdf}{0.35}{Results for different sample rates.}
 
@@ -39,9 +88,9 @@ Result summary:
 \toprule
 block size  & 2op & 1op & pad+for & pad \\
 \midrule
-32  & 2 & 4 & 8 & 14 \\
-64  & 2 & 4 & 8 & 14 \\
-128 & 2 & 4 & 8 & 15 \\
+32  & 1 & 3 & 7 & 13 \\
+64  & 1 & 3 & 7 & 13 \\
+128 & 1 & 3 & 7 & 14 \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -55,6 +104,11 @@ block size  & 2op & 1op & pad+for & pad \\
 %  \____\___/|_| |_|\_/ \___/|_|\__,_|\__|_|\___/|_| |_|
 %                                                       
 %-----------------------------------------------------------------------------
+\subsection{Time-domain convolution}
+
+Our second experiment tries to clarify what is the maximum size of a FIR
+filter that can be applied in real time to an input signal by use of
+time-domain convolution algorithms.
 
 \figura{./img/convolution-comparison-cpad.pdf}{0.35}{TODO: change caption}
 
@@ -81,8 +135,8 @@ Ordem máxima do filtro FIR em cada cenário ($R=31.250$~Hz):
 \end{center}
 
 %-----------------------------------------------------------------------------
-{Exemplo: moving average}
-\figura{./img/moving.pdf}{0.35}{TODO: change caption}
+%{Exemplo: moving average}
+%\figura{./img/moving.pdf}{0.35}{TODO: change caption}
 
 
 %-----------------------------------------------------------------------------
@@ -94,8 +148,67 @@ Ordem máxima do filtro FIR em cada cenário ($R=31.250$~Hz):
 %
 %-----------------------------------------------------------------------------
 
+\subsubsection{FFT}
 
-\figura{./img/fft.pdf}{0.35}{TODO: change caption}
+The third experiment is concerned with the maximum length of an FFT that can
+be computed in real time inside an Arduino. 
+
+The macro defining the call for one-dimensional fast fourier algorithm:
+
+\begin{lstlisting}
+#define four1(data, nn, isign)
+  int i, j, n, mmax, m, istep;
+  float wtemp, wr, wpr, wpi, wi, theta, tempr,
+        tempi;
+  n = nn << 1;
+  j = 1;
+  for(i=1; i<n; i+=2) {
+    if(j > i) {
+      float temp;
+      temp = data[j];
+      data[j] = data[i];
+      data[i] = temp;
+      temp = data[j+1];
+      data[j+1] = data[i+1];
+      data[i+1] = temp;
+    }
+    m = n >> 1;
+    while(m >= 2 && j > m) {
+      j -= m;
+      m >>= 1;
+    }
+    j += m;
+  }
+  mmax = 2;
+  while(n > mmax) {
+    istep = (mmax << 1);
+    theta = isign*(6.28318530717959/mmax);
+    wtemp = sin(0.5*theta);
+    wpr = -2.0*wtemp*wtemp;
+    wpi = sin(theta);
+    wr = 1.0;
+    wi = 0.0;
+    for(m=1; m<mmax; m+=2) {
+      for(i=m;i<=n;i+=istep) {
+        j = i+mmax;
+        tempr = wr*data[j]-wi*data[j+1];
+        tempi = wr*data[j+1]+wi*data[j];
+        data[j] = data[i] - tempr;
+        data[j+1] = data[i+1] - tempi;
+        data[i] += tempr;
+        data[i+1] += tempi;
+      }
+    wr = (wtemp=wr)*wpr-wi*wpi+wr;
+    wi = wi*wpr+wtemp*wpi+wi;
+    }
+    mmax = istep;
+  }
+\end{lstlisting}
+
+
+Figure \ref{fig:fft} shows the FFT analysis time for different block sizes.
+
+\figura{fft}{0.35}{TODO: change caption}
 
 %-----------------------------------------------------------------------------
 Determinação de frequência máxima:
