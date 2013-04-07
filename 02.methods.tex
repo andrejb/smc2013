@@ -15,9 +15,11 @@ these tasks can be performed in a variety of ways, and for this examination we
 chose to go with the basic functionalities of the platform.
 
 In this investigation, we used an Arduino Duemilanove with an ATmega328P
-microcontroller, a very modest version of the platform. It has an 8-bit RISC
-central processor, operates with a base frequency of 16~MHz, and has memory
-capacity of 32~KB for program storage and 2~KB for random access.
+microcontroller from Atmel, a very modest version of the platform. It has an
+8-bit RISC central processor, operates with a base frequency of 16~MHz, and
+has memory capacity of 32~KB for program storage and 2~KB for random access.
+From now on, whenever we refer to \emph{the microcontroller}, we are in fact
+talking about this specific model from this specific manufacturer.
 
 \subsection{Microcontroller's elements}
 
@@ -25,125 +27,146 @@ capacity of 32~KB for program storage and 2~KB for random access.
 
 To be able to know how to configure the platform to suit our needs, a general
 understanding of the inner workings of a microcontroller is needed. The Atmel
-Atmel megaAVR series microcontroller is comprised of several components, some
+megaAVR series microcontroller is comprised of several components, some
 of which are fundamental for our investigation and so will be briefly covered
 in this section.
 
 \subsubsection{Clocks}
 
-Clocks provide the frequencies in which the different parts of the
+Many \emph{clocks} provide the frequencies in which the different parts of the
 microcontroller work. They are basically either emitters or dividers of square
-wave signals that provide the frequency of operation of the CPU, the ADC,
-the memory access, etc. Possible sources of clock frequencies are crystal
-and RC oscillators.
+wave signals that provide the frequency of operation of the CPU, the ADC, the
+memory access and other components of the microcontroller. Possible sources of
+clock frequencies are crystal and RC oscillators.
 
 A useful concept associated with clocks is the one of a \emph{prescaler}.
 Prescalers are dividers for clock frequencies that either actually lower the
-frequency of a clock or at least trigger specific interrupts on a power of two
-fraction of a clock's frequency.
+frequency of a clock or at least trigger specific interrupts on a (power of
+two) fraction of a clock's frequency.
 
-The \emph{system clock} provides the system's base frequency of operation. In
-our study, we make use of the system clock prescaler to control the PWM
-frequency that drives our DSP mechanism, as we will see in the section
-\ref{sec:pwm}. Another important clock is the \emph{I/O clock} used for
-feeding a frequency to most of the input/output mechanisms.
+The \emph{system clock} provides the system's base frequency of operation.
+Other important clocks are the \emph{I/O clock} and the \emph{ADC clock} used
+for feeding a frequency to most of the input/output mechanisms. It is possible
+to choose which clock will feed a frequency to some parts of the system, as
+well as select prescaler values independently. In our study, we make use of
+the \emph{timer clock} prescaler to control the PWM frequency that drives our
+DSP mechanism, as we will see in Section \ref{sec:pwm}. 
 
 \subsubsection{Registers and interrupts}
 
 The microcontroller's CPU is comprised of an arithmetic logic unit that works
 with 32 \emph{registers} -- portions of memory that provide data for
 computation as well as determine the execution flow of the program. An
-\emph{interrupt} is a deviation from the execution flow that can be triggered
-by a variety of events in the system, usually by setting values on specific
-registers.
+\emph{interrupt} is an attempt of deviation from the current execution flow
+that can be triggered by a variety of events in the system, usually by setting
+reference values on specific registers.
 
 In our case, interrupts are of extreme value as they are the low level
 structures that allow us to execute code with a somewhat fixed frequency (at
-least if we assume that the clock frequency is fixed in relation with real
-time).
+least if we assume that the clock frequencies are indeed constant in relation
+with real time).
 
 \subsubsection{Timers/counters}
 
 A \emph{timer}, or \emph{counter}, is a register whose value is automatically
-incremented according to a specific clock. A certain timer has a fixed length
-in bits and may have lots of interrupts associated with its behaviour. When a
-counter hits its maximum value, for example, it is reset to zero and signals
-an overflow interrupt, which may cause a function to be called.
+incremented according to a specific clock.
+% Esta frase não parece imprescindível...
+% A certain timer has a fixed length
+% in bits and may have lots of interrupts associated with its behaviour.
+When a
+counter hits its maximum value it is reset to zero and signals
+an overflow interrupt, which may cause a certain function to be called.
 
-Timers are important in the context of DSP because they provide the way to
+Timers are important in the context of DSP because they provide a natural way to
 perform many of the DSP chain tasks, as for example to periodically launch the
-sampling function (that fills the input buffer) and to emmit a PWM square wave
-which after (analog) filtering causes the digital signal to be converted back
-to analog. The ATmega328P has two bit counters and one 16 bit counter, each
-having different sets of features but all being capable of doing PWM.
+input signal sampling function (that fills the input buffer) and to emmit a
+PWM square wave which, after
+% some (analog)
+% prefiro ser mais específico, me corrija se estiver errado:
+analog low-pass 
+filtering (through an integrator),
+corresponds to a smooth analog signal.
+% causes the digital
+% signal to be converted back to analog.
+The ATmega328P has two 8 bit counters
+and one 16 bit counter, each having different sets of features but all being
+capable of doing PWM.
 
 \subsubsection{Input and output pins}
 
 Microcontrollers can receive and emit digital signal through \emph{I/O pins},
-which in the case of the the Arduino board are conveniently mounted in a way
-it is easy to plug other components and boards. These pins are read from and
-written to according to frequencies governed by different clocks (I/O, ADC and
-others).
+which in the case of the Arduino board are conveniently mounted in such a way
+that it is easy to plug other components and boards. These pins are read from
+and written to according to frequencies governed by different clocks (I/O, ADC
+and others).
 
 In principle, the microcontroller pins are designed to work with binary
-signals represented by two different voltages, in general 0~V and 5~V, having
-a threshold value to account for small deviations from these reference
-voltages. Despite that, I/O pins come equipped with handy mechanisms for
-sampling input signals with voltage varying between the reference extremes,
-and also to generate waveforms that can be filtered to approximate varying
-output signals of the same nature. These mechanisms are, respectively, the
-analog-to-digital converter (ADC) and the pulse-width modulation (PWM), which
-will be seen in the next couple of sessions.
+signals represented by two different voltages (0~V and 5~V with a threshold
+value to account for small deviations). Despite
+that, I/O pins come equipped with handy mechanisms for sampling band limited
+input signals whose voltages vary between the reference extremes, and also for
+generating waveforms that, after being filtered, output varying signals of the
+same nature. These mechanisms are, respectively, the analog-to-digital
+converter (ADC) and the pulse-width modulation (PWM), which will be seen in
+the next sections.
 
 
 \subsubsection{Memory}
 
-The microcontroler has 3 different memory spaces: 32~KB of persistent flash memory for
-program storage, 2~KB of non-persistent SRAM memory for data storage and 1~KB
-of persistent EEPROM memory for data storage. The following table summarizes
-some differences between each type of memory:
+The microcontroler has 3 manageable memory spaces for storing the program and
+working data, and the following table summarizes the different characteristics
+and purposes for each type of memory:
 
 \begin{center}
-\begin{tabular}{crrr}
+\begin{tabular}{crcrr}
 \toprule
 \toprule
-\multicolumn{1}{c}{\footnotesize{type}} &
-\multicolumn{1}{c}{\footnotesize{size (KB)}} &
-\footnotesize{\parbox{5em}{write time (clock ticks)}} &
-\footnotesize{\parbox{5em}{endurance (write/erase cycles)}} \\
+\multicolumn{1}{c}{\footnotesize{Type}} &
+\multicolumn{1}{c}{\footnotesize{\parbox{2em}{Size (KB)}}} &
+\footnotesize{\parbox{4em}{Data persistency}} &
+\footnotesize{\parbox{5em}{Write time (clock ticks)}} &
+\multicolumn{1}{c}{\footnotesize{\parbox{5em}{Endurance (write/erase cycles)}}} \\
 \midrule
-Flash  & 32 & 1 & 10,000 \\
-SRAM   & 2  & 2 & 10,000 \\
-EEPROM & 1  & 30 & 100,000 \\ 
+Flash  & 32 & yes & 1  & 10,000 \\
+SRAM   & 2  & no  & 2  & 10,000 \\
+EEPROM & 1  & yes & 30 & 100,000 \\ 
 \bottomrule
 \end{tabular}
 \end{center}
 
+Usually, the Flash memory stores the program, the SRAM memory stores volatile
+data used along the computation, and the EEPROM is used for longer-term
+storage between working sessions. Notice that the amount of SRAM memory
+represents a hard limit for many DSP algorithms. A 512 point lookup table
+filled with precalculated sinewave bytes, for example, represents $25\%$
+of all available working space. Thus, it might be interesting to store
+hardcoded data in the program memory whenever possible if memory working space
+is lacking.
 
 
 \subsection{Audio in: ADC}
 
 Data can flow into the microcontroller in a variety of ways, the most basic
-being an embedded serial communication mechanism and the input pins. The
+being embedded mechanisms for digital serial communication and analog-to-digital conversion using the input pins. The
 former mechanism can feed digital data directly to memory, while the latter
-can either read 1 bit (as explained in the last section) or sample an
-intermediate value between the reference voltages using 8 or 10 bits for
-representing that value.
+can either read 1 bit from an input pin (as explained in the last section) or sample an
+analog value between the reference voltages using 8 or 10 bits resolution.
 
 Rather than providing the microcontroller with digital data, our setup uses
-the analog-to-digital conversion to sample an audio signal using the
-microcontroller pins' ADC mechanism. This choice was made so the signal can be
-directly connected to the microcontroller (i.e. no external device has to be
-used for sampling) and we can study the device's performance taking into
+the embedded analog-to-digital conversion to sample an audio signal using
+the microcontroller pins' ADC mechanism. This choice was made so the signal
+can be directly connected to the microcontroller (i.e. no external device has
+to be used for sampling) and we can study the device's performance taking into
 account this crucial step in the digital audio processing chain.
 
-The ADC uses a \emph{Sample and Hold} circuit that holds the input voltage
-at a constant level until the end of the conversion. This fixed voltage is
-then successively compared with reference voltages to obtain a 10 bit
+The ADC uses a \emph{Sample and Hold} circuit that holds the input voltage at
+a constant level until the end of the conversion. This fixed voltage is then
+successively compared with reference voltages to obtain a 10 bit
 approximation. If a faster conversion is desired, precision can be sacrificed
 and the first 8 bits can be read before the last 2 are computed. Conversion
 time takes between 13 and 250~$\mu$s, depending on several configuration
-parameters given to the ADC mechanism.
+parameters that influence the precision of the
+result.
 
 As noted before, the ADC mechanism has a dedicated clock to ensure conversion
 can occur independently of other microcontroller parts. Also, the mechanism
@@ -153,106 +176,144 @@ starts as soon as the last one finishes).
 \subsection{Audio out: PWM}
 \label{sec:pwm}
 
-Once the input signal has been sampled and processed, one way to convert
-it back to analog is to use the embedded PWM mechanism that is available in
-some of the output pins of the microcontroller. PWM is a technique for
-representing an intermediate value from two reference values that can have its
-output filtered to reconstruct a bandwidth limited signal. In our case, this
-filtering is made from a simple RC circuit that stands between the output pin
-and a normal speaker.
+Once the input signal has been sampled and processed, one way to convert it
+back to analog is to use the embedded \emph{pulse width modulation} (PWM) mechanism that is available in some
+of the output pins of the microcontroller, followed by an analog filtering
+stage. A PWM wave encodes a determined value in the width of a square pulse.
+In order to do this, it defines a \emph{duty cycle} as the percentage of time
+that the square wave has its maximum value in relation to the total time between square pulses (see Figure \ref{fig:pwmmeu}). The encoding of a value $x$
+ranging from $X_1$ to $X_2$ is just the enforcement of a duty cycle with a
+percentage equal to $\frac{x}{X_2-X_1}$.
 
-For outputting the result, PWM conversion is used, followed by a simple
-low pass filter.
+\figura{pwmmeu}{0.40}{Examples of PWM waves with different duty cycles. The
+left alignment of the waves expose the use of Fast PWM mode.}
 
-PWM characteristics:
+The final analog filtering stage is needed to remove high frequency components
+present in the square wave spectrum to reconstruct a band limited signal. In our case,
+this filtering is made from a simple RC integrator circuit that stands between the output
+pin and a normal speaker.
+% TODO: inserir referencia.
 
-\begin{itemize}
-    \item 6 output channels.
-    \item Different modes of operation (fast PWM and phase correct PWM).
-    \item prescaler.
-    \item Two 8-bit counters and one 16-bit counter.
-    \item Overflow interrupt.
-\end{itemize}
+The PWM mechanism can operate in different modes which vary according to how
+the reference value to be encoded relates with a counter's signal to generate
+the output values of the modulated wave. In \emph{Fast PWM} mode, the output
+signal is 1 in the beginning of the cycle and is 0 whenever the
+reference value becomes smaller than the counter value (see Figure
+\ref{fig:pwm2-new}). This mode has the disadvantage of outputing the square pulses
+aligned to the left of the PWM cycle, and so the \emph{Phase correct} mode is
+available to solve this problem at the expense of cutting the signal
+generation frequency in half. It works by making the counter count back to
+zero instead of being reset when it hits its maximum value.
 
-\figura{pwmmeu}{0.40}{TODO: change captions.}
-%\figura{pwm2}{0.35}{TODO: change captions.}
-\figura{Pwm}{0.45}{TODO: change captions.}
+\figura{pwm2-new}{0.50}{Time evolution of register values in the PWM mechanism. \texttt{TCNTn} is the value of the counter and \texttt{OCnx} is the value of the output pin. Note how changes in the reference value determine the duty cycle on each wave period.}
 
-Explain how we use PWM interrupts to determine the frequency of operation of
-our DSP system (and other possibilities of how this could be done).
+The output frequency of the PWM signal is a function of the clock selected to be
+used as input for the counter, the counter prescaler value, the size of the
+counter (in bits) and the PWM mode. For a $b$ bits counter with input clock of
+$f_{clock}$~Hz and prescaler value of $p$, an output pin configured to operate
+in fast PWM mode overflows with a frequency of $\frac{f_{clock}}{p \times
+2^b}$~Hz. This provides us with a way to output the processed signal while
+using the same infrastructure to schedule periodic actions, such as querying
+for ADC values and signaling that blocks of samples are ready to be processed.
 
+Also notice that the counter size determines the output signal resolution, as
+the duty cycles of the square waves correspond to the ratio between the
+current counter value and its maximum possible value. We will see more about
+parameters choice for PWM on section \ref{sec:proc-pwm}.
 
-\subsection{Processing}
+\subsection{Real time processing}
 
 The main constraint in real time DSP is, of course, the amount of time
 available for the computation of output samples: they must be ready to be
 consumed by the playback hardware or else glitches and other unwanted
 artifacts will possibly be introduced in the signal. One round of sample
-analysis, processing and calculation of a new sample is called a \emph{DSP
+analysis, processing and calculation of a new sample is called a \emph{DSP sample
 cycle}. Many algorithms, though, operate in blocks of samples, consuming and
-producing a whole block of samples in each round. Naturally, in these cases
-the period of the DSP cycle is the period of one sample times the size of the
-DSP block. If the DSP block period is of $N$ samples and the sample rate is
-$R$~Hz, then the DSP cycle period is given by $T_{DSP}=\frac{N}{R}$ seconds.
+producing a whole block of samples in each round.
+% A frase abaixo apenas "soletra" a fórmula que aparece em seguida (desnecessário)
+% Naturally, in these cases
+% the period of the DSP cycle is the period of one sample times the size of the
+% DSP block.
+If the DSP block has $N$ samples and the sample rate is
+$R$~Hz, then the DSP cycle is given by $T_{DSP}=\frac{N}{R}$ seconds.
 
 In order to implement this behaviour in the microcontroller, we have to find a
 way to (1) accumulate input samples in a buffer, (2) schedule a periodic call
 to a function that will process the samples in this buffer, and (3) output
-modified samples in a timely fashion. One possible solution is to use a
-timer's overflow interrupt.
+modified samples in a timely fashion. Components are at hand: ADC for reading
+the input signal, counters and their interrupts for running periodic tasks, and PWM for outputing
+the resulting signal. In addition, the Arduino library provides a \texttt{loop()}
+function that is called repeatedly which we can use to process the block of
+samples when it becomes available.
 
-\subsubsection{DSP cycles}
+As we saw in section \ref{sec:pwm}, the
+PWM mechanism provides an overflow interrupt frequency that may be used to
+schedule a function for periodic execution. In our setup we use this mechanism
+to periodically read samples from the ADC mechanism and accumulate them in an input
+buffer, while also writing the computed samples from the last DSP cycle to the PWM output buffer. In
+this same function, whenever the buffer is full and ready to be processed,
+a flag is set and the \texttt{loop()} function is released to work
+on the samples.
 
-\begin{itemize}
-    \item We need a mechanism to periodically call a function that will work
-    on a block of samples.
-\end{itemize}
 
-\subsubsection{ADC conversion}
+\subsection{Implementation}
 
-The table below shows a measurement of conversion time using different
-prescaler values for the ADC clock:
+Putting all the elements together is a matter of choosing the right parameters
+for configuring different parts of the microcontroller.
+
+\subsubsection{ADC parameters}
+
+ADC conversion takes about 14.5 ADC clocks, including sample-and-hold time. If the CPU clock
+frequency is 16~MHz and the ADC prescaler has a value of $p$, then the ADC clock
+period is $p/16$ and the conversion period is then $T_\text{conv} = 14.5 \times p / 16$.
+Below we can see a table with the theoretical values for the conversion period $T_\text{conv}$ for
+all prescaler values available and also the results $\tilde{T}_\text{conv}$ of measured conversion
+times using each prescaler value. Also depicted
+in the table are the measured conversion frequencies $\tilde{f}_\text{conv}=1/\tilde{T}_\text{conv}$.
 
 \begin{center}
 \begin{tabular}{crrrr}
 \toprule
 \toprule
-\footnotesize{prescaler} & \footnotesize{$f_\text{ADC}$ (KHz)} &
-\footnotesize{$T_\text{ADC}$ ($\mu$s)} & \footnotesize{$\tilde{T}_\text{conv}$ ($\mu$s)} & \footnotesize{$\tilde{f}_\text{conv}$ ($\approx$Hz)} \\
+\footnotesize{prescaler} &
+\footnotesize{$T_\text{conv}$ ($\mu$s)} & \footnotesize{$\tilde{T}_\text{conv}$ ($\mu$s)} & \footnotesize{$\tilde{f}_\text{conv}$ ($\approx$KHz)} \\
 \midrule
-2 & 8.000 & 0,125 & 12,61 & 79.302\\
-4 & 4.000 & 0,25 & 16,06  & 62.266 \\
+2 & 1.8125 & 12.61 & 79.302\\
+4 & 3.625 & 16.06  & 62.266 \\
 %\rowcolor{grey}
-8 & 2.000 & 0,50 & 19,76  & 50.607 \\
-16& 1.000 & 1 & 20,52  & 48.732 \\
-32& 500 & 2 & 34,80  & 28.735 \\
-64& 250 & 3 & 67,89  & 14.729 \\
-128& 125 & 8 & 114,85 & 8.707  \\
+8 & 7.25 & 19.76  & 50.607 \\
+16& 14.5 & 20.52  & 48.732 \\
+32& 29 & 34.80  & 28.735 \\
+64& 58 & 67.89  & 14.729 \\
+12& 116 & 114.85 & 8.707  \\
 \bottomrule
 \end{tabular}
 \end{center}
 
 These measurements were made using the \texttt{micros()} function of the
-Arduino library API, which has a resolution of about 4~$\mu$s.
+Arduino library API, which has a resolution of about 4~$\mu$s. This might explain
+part of the deviation of measured values from the expected values for lower values of prescaler.
+8 bit approximation was used, and for obtaining a 10 bit approximation we
+can expect an overhead of at least 25\% in conversion time.
 
-Obs:
-\begin{itemize}
-  \item The resolution of the \texttt{micros()} function is of 4~$\mu$s.
-  \item Conversion period $\approx$ $14.5 \times T_\text{ADC}$. 
-  \item $R=44100$~Hz $\Rightarrow$ $T_\text{amostra} \approx 22.67~\mu$s.
-  \item $R=31250$~Hz $\Rightarrow$ $T_\text{amostra} = 32.00~\mu$s.
-\end{itemize}
+It is important to note that the choice for ADC prescaler value limits
+the sampling rate of the input signal. As our setup uses a counter's overflow interrupt
+to obtain samples from the ADC mechanism, the ADC conversion period must be smaller
+than the the PWM's cycle period. Any prescaler choice that leads to a frequency
+higher than the PWM's overflow interrupt frequency is valid, but the lower the
+prescaler value the lower the quality of the conversion. 
 
-ADC parameter choice:
 
-\begin{itemize}
-    \item Left-aligned conversion (8 bits).
-    \item Prescaler equals to 8.
-\end{itemize}
+% TODO: comment that input has to be callibrated?
+
 
 \subsubsection{PWM}
+\label{sec:proc-pwm}
 
-Frequency of operation given an 8-bit counter and different values for
+From Section \ref{sec:pwm} we can see that in a 16~MHz CPU, an 8 bit counter with prescaler value of $p$ has 
+an overflow interrupt frequency of $f_\text{overflow}=10^6/p \times 2^4$~Hz.
+% A tabela abaixo é apenas aplicação direta das fórmulas, será que faz sentido?  
+Below we can see a table with the overflow interrupt frequency for all possible values of
 prescaler:
 
 \begin{center}
@@ -263,9 +324,9 @@ prescaler:
 \footnotesize{$f_\text{incr}$ (KHz)} &
 \footnotesize{$f_\text{overflow}$ (Hz)}  \\
 \midrule
-1 & 16.000 & 62.500 \\
-8 & 2.000 & 7.812 \\
-32 & 500 & 1.953 \\
+1 & 16.000 & 62500 \\
+8 & 2.000 & 7812 \\
+32 & 500 & 1953 \\
 64 & 250 & 976 \\
 128 & 125 & 488 \\
 256 & 62,5 & 244 \\
@@ -274,69 +335,100 @@ prescaler:
 \end{tabular}
 \end{center}
 
-Chose parameters:
+The choice of PWM and ADC prescaler values determine directly the sampling
+rate of our DSP system. If we set the ADC prescaler in a way that the ADC
+conversion period is smaller than the PWM overflow interrupt period and synchronize
+reads from the input with writes to the output, then
+the PWM overflow interrupt frequency becomes the DSP system's sample rate. We
+will see this with more details in the next section.
 
-\begin{itemize}
-  \item \emph{Fast PWM}.
-  \item 8-bit counter.
-  \item Prescaler value of 1.
-  \item Overflow frequency: 16~MHz / 1 / $2^8$ = 62500~Hz.
-  \item Sample generation frequency: 31250~Hz.
-\end{itemize}
+For the PWM mechanism, we chose to use Fast PWM mode on
+an 8-bit counter with prescaler value of 1. That would give us a sample rate of
+62500~Hz, which is enough for representing the audible spectrum. Nevertheless,
+if we need more time to compute we may artificially lower the frequency by
+only executing the sampling/outputing bit in a fraction of the interrupts. For
+our tests, we chose to cut the sample rate in half using the rationale that
+the payoff of having more time to compute is larger than the one of ensuring
+we can represent the last fifth of the audible spectrum. Therefore, our final choice of sample rate is 31250~Hz, with a sample period
+of 32~$\mu$s.
 
 \subsubsection{Putting it all together}
 
+Having chosen a value for the PWM counter size and PWM prescaler, we are left
+with the choice for ADC parameters. As noted, it suffices to choose a value
+that ensures ADC conversion period is smaller than the desired sample period.
+We chose to use 8 bit conversion to match the PWM resolution and to provide for
+a faster conversion time. Also, we chose an ADC prescaler value of 8, with a
+measured conversion time of 19.76~$\mu$s which, when compared with the
+a sample period of 32~$\mu$s ensures that conversion will be finished before
+the input ADC is queried for the sample.
+
+Below we can see the code for the \emph{interupt service routine} (ISR) DSP controller function. \texttt{x} is the input buffer, \texttt{ADCH} maps to the ADC register holding the input sample, \texttt{OCR2A} maps to the PWM output regiser and \texttt{y} is the output buffer. Some of the code is index black magic and the rest we comment below.
+
 \begin{lstlisting}
-/* 1. read from ADC input */
-x[ind] = ADCH;
-
-/* 2. write to PWM output */
-OCR2A = y[(ind-MIN_DELAY)&(BUFFER_SIZE-1)];
-
-// 3. signal availability of new sample block
-if ((ind & (BLOCK_SIZE - 1)) == 0) {
-  rind = (ind-BLOCK_SIZE) & (BUFFER_SIZE-1);
-  dsp_block = true;
-}
-
-/* 4. increment read/write buffer index */
-ind++;
-ind &= BUFFER_SIZE - 1;
-
-/* 5. start new ADC conversion */
-sbi(ADCSRA,ADSC); 
+// Timer2 Interrupt Service at 62.5 KHz
+ISR(TIMER2_OVF_vect) {
+  static boolean div = false;
+  div = !div; // divide frequency to 31.25 KHz
+  if (div){
+    // 1. read from ADC input
+    x[ind] = ADCH;
+    // 2. write to PWM output
+    OCR2A = y[(ind-MIN_DELAY)&(BUFFER_SIZE-1)];
+    // 3. signal availability of new sample block
+    if ((ind & (BLOCK_SIZE - 1)) == 0) {
+      rind = (ind-BLOCK_SIZE) & (BUFFER_SIZE-1);
+      dsp_block = true;
+    }
+    // 4. increment read/write buffer index
+    ind++;
+    ind &= BUFFER_SIZE - 1;
+    // 5. start new ADC conversion
+    sbi(ADCSRA,ADSC);
+  }
+} 
 \end{lstlisting}
 
-
+Note that in step 3 we test if the input index is a multiple of the block size and, if it is, we set a read index \texttt{rind} and signal that there is a new DSP block available for calculation. Meanwhile, the \texttt{loop()} function is running concurrently and will eventually catch that signal and start to work on samples. Finally, we increment buffer indexes and perform the call to start a new ADC conversion by calling \texttt{sbi()}.
 
 \subsection{Benchmarking}
 
-Once we have a way to input and output analog audio signals to and from the
-Arduino board, then we can start to experiment and measure the time it takes
-to perform common DSP routines in this environment.
+%% Once we have a way to input and output analog audio signals to and from the
+%% Arduino board, then we can start to experiment and measure the time it takes
+%% to perform common DSP routines in this environment.
 
-Some questions arise immediately from such a constraint:
+We are interested in evaluating the performance of the Arduino board on some common sound processing tasks, in order to gain insight on its real time stream processing capabilities.
+Note that our interest lies
+in high-level DSP operations; for instance, we'd prefer to know how many simultaneous sinuisoids can
+be synthesized in real time rather than how many multiplications
+and additions fit between successive DSP blocks (even though the former follows from
+the latter).
+% TODO: explicar melhor ou sumir com a frase acima. 
+
+Some questions arise immediately from the real time constraint:
 
 \begin{itemize}
-    \item What is the maximum amount of operations that can be carried in real
+    \item What is the maximum amount of DSP operations that can be carried in real
     time?
     \item Which implementation details make a difference?
-    \item What is the quality of the resulting audio signal?
 \end{itemize}
+
+We try to answer these questions by running 3 different DSP algorithms in the
+microcontroller environment described in the last section. The chosen tasks are additive synthesis, time-domain convolution and FFT computation, and are discussed in the sequel.
 
 \subsubsection{Additive synthesis}
 
-An additive synthesis is the process of constructing a more complex waveform
-by adding together several more basic waveforms (see Figure \ref{fig:add}).
+An additive synthesis is the process of constructing a complex waveform
+by adding together several basic waveforms (see Figure \ref{fig:add}).
 This technique has been widely used for synthesizing new sounds as well as
-resynthesizing signals after they went through some computational procedure.
+resynthesizing signals after they have been processed (e.g. via spectral methods).
 
-\figura{add}{0.20}{Additive synthesis.}
-
+\figura{add}{0.20}{Additive synthesis: many basic oscillators governed by
+independent amplitude and phase functions are combined to form a complex signal.}
 
 The high level code for a simple additive synthesis can be seen below:
 
-\begin{lstlisting}[caption=Additive synthesis algorithm.]
+\begin{lstlisting}%[caption=Additive synthesis algorithm.]
 for (n = 0; n < N; n++)
 {
   angle = 2.0 * M_PI * t;
@@ -350,14 +442,14 @@ for (n = 0; n < N; n++)
 \subsubsection{Time-domain convolution}
 
 Frequency-domain multiplication of spectra correspond to time-domain
-convolution of signals, and such an operation allows for frequency filtering.
+convolution of signals, and such an operation allows for some techniques of frequency filtering.
 The time-domain implementation of convolution is a widely used technique in
-many computer music algorithms and the general scheme can be seen in Figure
+many computer music algorithms, being particularly efficient when the filter order $N$ is small. The general scheme can be seen in Figure
 \ref{fig:FIR_Filter}.
 
-\figura{FIR_Filter}{0.35}{TODO: change caption}
+\figura{FIR_Filter}{0.45}{Time-domain convolution: the input signal is convolved with the filter's impulse response. This is the general scheme for FIR filtering.}
 
-The high-level code for a time-domain convolution is:
+The high-level code for a time-domain convolution with a FIR filter of order $N$ is:
 
 \begin{lstlisting}
 for (k = 0; k < N; k++)
@@ -372,8 +464,9 @@ $O(n\log(n))$, where $n$ is the number of time-domain digital samples or,
 equivalently, the number of frequency bins that describe the frequency
 spectrum of the signal after the Transform computation. The FFT algorithm
 takes advantage of redundancy and symmetry on intermediary steps of the
-calculation and is used in many signal processing algorithms (see Figure
-\ref{fig:butterfft}).
+calculation and is used in many signal processing algorithms. The implementation
+code will be given in Section \ref{sec:results-fft} but the general scheme of the FFT can
+be seen in Figure \ref{fig:butterfft}.
 
 %-----------------------------------------------------------------------------
 %\figura{./img/fft1.pdf}{0.35}{TODO: change caption}
@@ -389,10 +482,9 @@ frequency bins.}
 
 Each of the algorithms mentioned in the last sections have different
 computational costs in terms of number of integer and floating-point
-operations, and quantity of memory reads and writes (and amount of memory
-accessed in each of these operations). 
+operations, and quantity/size of memory reads and writes. 
 
-In the context of real time audio processing in the Arduino, the algorithms mentioned above
+In the context of real time audio processing in Arduino, the algorithms mentioned above
 bring natural questions regarding feasibility of processing:
 
 \begin{itemize}

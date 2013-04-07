@@ -35,13 +35,14 @@ oscillators that can be used in real time for additive synthesis inside the
 Arduino.  Figures \ref{fig:sinesum-comparison-for} and
 \ref{fig:sinesum-comparison} show the amount of oscilators feasible by,
 respectivelly, making use of a loop and making use of inline code. By removing
-loops we were able to jump from 8 oscillators to at least 13, or 14 in the
+loops we were able to increase from 8 oscillators to at least 13, or 14 in the
 case of block size of 128 samples.
 
-\figura{sinesum-comparison}{0.35}{Results for blocks of different
+
+\figura{sinesum-comparison-for}{0.45}{Results for blocks of different
 sizes.}
 
-\figura{sinesum-comparison-for}{0.35}{Results for blocks of different
+\figura{sinesum-comparison}{0.45}{Results for blocks of different
 sizes.}
 
 In any DSP algorithm that works over a block of samples there may be at least
@@ -63,37 +64,36 @@ numbers and types of operations.
 Two parameters are used to calculate the value of each oscillator: phase and
 amplitude. Phase is handled by updating the index for sine table reads, and
 then the amplitude has to be multiplied by the value obtained by the lookup.
-We implemented 3 different ways of multiplying the amplitude: (1) 2
-multiplications, (2) 1 multiplication, (3) variable pad.
+Floating point operations are also extremelly expensive in the platform we are using, so 
+we implemented 3 different ways of multiplying the amplitude: (1) by using one integer multiplication and one integer division (2 integer operations), (2) by using only one integer division (1 integer operation), and (3) by using variable bit pading for performing bitwise power of 2 division or multiplication.
 % TODO: epxlicar melhor acima.
 Figure \ref{fig:operations-128-31250} shows the time taken by the calculation
 of the additive synthesis algorithm for different number of oscillators using
 the different types of operations. By making use of lower level operations
-that might achieve less precise results we were able to raise the number of
-oscillators from 3 (when using 2 multiplications) to 15 (when using a variable
-pad).
-
-\figura{operations-128-31250}{0.35}{Time taken for synthesis
-algorithm using different operations and variable number of oscillators.}
+(that achieve less precise results) and inline code we were able to raise the number of
+oscillators from 3 (when using 2 integer operations and a for loop) to 15 (when using a variable
+pad and inline code).
 
 
+\figura{operations-128-31250}{0.45}{Time taken for additive synthesis
+algorithm with block size of 128 samples, using different number and kinds of operations and variable number of oscillators.}
 
-\figura{./img/frequencies-128-1.pdf}{0.35}{Results for different sample rates.}
+%\figura{./img/frequencies-128-1.pdf}{0.35}{Results for different sample rates.}
 
-Result summary:
-
-\begin{center}
-\begin{tabular}{rcccc}
-\toprule
-\toprule
-block size  & 2op & 1op & pad+for & pad \\
-\midrule
-32  & 1 & 3 & 7 & 13 \\
-64  & 1 & 3 & 7 & 13 \\
-128 & 1 & 3 & 7 & 14 \\
-\bottomrule
-\end{tabular}
-\end{center}
+%Result summary:
+%
+%\begin{center}
+%\begin{tabular}{rcccc}
+%\toprule
+%\toprule
+%block size  & 2op & 1op & pad+for & pad \\
+%\midrule
+%32  & 1 & 3 & 7 & 13 \\
+%64  & 1 & 3 & 7 & 13 \\
+%128 & 1 & 3 & 7 & 14 \\
+%\bottomrule
+%\end{tabular}
+%\end{center}
 
 
 %-----------------------------------------------------------------------------
@@ -108,31 +108,34 @@ block size  & 2op & 1op & pad+for & pad \\
 
 Our second experiment tries to clarify what is the maximum size of a FIR
 filter that can be applied in real time to an input signal by use of
-time-domain convolution algorithms.
+time-domain convolution algorithms. Following lessons learned on the first
+experiment, we implemented the filtering loop using different types of operations for multiplying each coefficient by the sample values: (1) using one integer division and one integer division, (2) using variable pad, and (3) using a constant hardcoded pad. The results for each of these implementations can be seen in Figures \ref{fig:convolution-comparison-div}, \ref{fig:convolution-comparison-vpad} and \ref{fig:convolution-comparison-cpad} respectivelly. This experiment was run with a sample rate of 31250~Hz and block sizes of 32, 64, 128 and 256 samples.
 
-\figura{./img/convolution-comparison-cpad.pdf}{0.35}{TODO: change caption}
+% Temporariamente desabilitando para eu poder compilar... não tenho essa figura
+%\figura{convolution-comparison-div}{0.45}{Time-domain convolution using 2 integer operations. In this case, the maximum order of the filter is 1 for all block sizes.}
 
-{Convolução no domínio do tempo}{Resultados para blocos de diferentes tamanhos}
+\figura{convolution-comparison-vpad}{0.45}{Time-domain convolution using variable pad. In this case, the maximum order of the filter is 7 for all block sizes.}
 
-\figura{./img/convolution-comparison-vpad.pdf}{0.35}{TODO: change caption}
+\figura{convolution-comparison-cpad}{0.45}{Time-domain convolution using constant pad. In this case, the maximum order of the filter is 13 for block sizes of 32 and 64, and 14 for block sizes of 128 and 256.}
 
-\figura{./img/convolution-comparison-mult.pdf}{0.35}{TODO: change caption}
+Results again show that small implementation differences make a big difference on computing power. When using integer division, the maximum order obtained for the filter was 1, while by using a variable pad the order raised to 7 and with constant pad we could read an order equal to 13 or 14 in some cases. 
 
-Ordem máxima do filtro FIR em cada cenário ($R=31.250$~Hz):
 
-\begin{center}
-\begin{tabular}{rccc}
-\toprule
-\toprule
-\footnotesize{block size}  & \footnotesize{multiplicação} & \footnotesize{pad variável} & \footnotesize{pad constante} \\
-\midrule
-32  & 1 & 7 & 13 \\
-64  & 1 & 7 & 13 \\
-128 & 1 & 7 & 14 \\
-256 & 1 & 7 & 14 \\
-\bottomrule
-\end{tabular}
-\end{center}
+%Ordem máxima do filtro FIR em cada cenário ($R=31.250$~Hz):
+%
+%\begin{center}
+%\begin{tabular}{rccc}
+%\toprule
+%\toprule
+%\footnotesize{block size}  & \footnotesize{multiplicação} & \footnotesize{pad variável} & \footnotesize{pad constante} \\
+%\midrule
+%32  & 1 & 7 & 13 \\
+%64  & 1 & 7 & 13 \\
+%128 & 1 & 7 & 14 \\
+%256 & 1 & 7 & 14 \\
+%\bottomrule
+%\end{tabular}
+%\end{center}
 
 %-----------------------------------------------------------------------------
 %{Exemplo: moving average}
@@ -149,11 +152,10 @@ Ordem máxima do filtro FIR em cada cenário ($R=31.250$~Hz):
 %-----------------------------------------------------------------------------
 
 \subsubsection{FFT}
+\label{sec:results-fft}
 
 The third experiment is concerned with the maximum length of an FFT that can
-be computed in real time inside an Arduino. 
-
-The macro defining the call for one-dimensional fast fourier algorithm:
+be computed in real time inside an Arduino. In this case we chose to evaluate a standard implementation of the FFT without further modifications. The macro defining the call for one-dimensional fast fourier algorithm is:
 
 \begin{lstlisting}
 #define four1(data, nn, isign)
@@ -205,20 +207,13 @@ The macro defining the call for one-dimensional fast fourier algorithm:
   }
 \end{lstlisting}
 
+It turned out that calculating an FFT using the same sample rate we used in the other experiments (31250~Hz) was infeasible, so we had to tweak the microcontroller's parameters to reach a state where we had a longer DSP cycle period for the same amount of samples and the FFT was indeed feasible. By measuring the amount of time taken to compute the FFT given the number of samples, we could determine that the maximum FFT frequency for a 256 samples block is of about 2335~Hz. So by raising the PWM prescaler value to 32, we could reach a sample rate of about 1953~Hz. 
 
-Figure \ref{fig:fft} shows the FFT analysis time for different block sizes.
+Figure \ref{fig:fft2} shows the FFT analysis time at a sample rate of 1953~Hz for different block sizes. We can see that in this scenario the maximum block size for which an FFT can be computed in real time in our DSP setup in the Arduino is 256 samples. This was expected because we actually forced a sample rate small enough so the 256 samples FFT was feasible. Note that, even though we can actually perform the FFT for block sizes smaller or equal to 256, there's not much time left for doing anything else with these results. An additive synthesis for reconstructing the signal, for example, is unfeasible as the maximum number of oscillators we could use was 14 (by restricting the type and number of operations), while here we would need the same number of oscillators as the number of samples in the block size.
 
-\figura{fft}{0.35}{TODO: change caption}
+\figura{fft2}{0.45}{TODO: change caption}
+%\figura{fft}{0.35}{TODO: change caption}
 
-%-----------------------------------------------------------------------------
-Determinação de frequência máxima:
-\begin{itemize}
-  \item Média de 428,15~$\mu$s por amostra.
-  \item Frequência máxima $\approx$ 2.335~Hz.
-  \item Pré-escalonador PWM de 32 $\Rightarrow$ $R=1.953$~Hz.
-\end{itemize}
-%-----------------------------------------------------------------------------
 
-\figura{./img/fft2.pdf}{0.35}{TODO: change caption}
 
 

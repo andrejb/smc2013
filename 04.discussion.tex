@@ -9,11 +9,13 @@
 \section{Discussion}
 \label{sec:discussion}
 
+From the results of our experiments, it is obvious that implementation details
+make a big difference in the amount of computation. 
 
 \begin{itemize}
     \item The types used (byte, unsigned long, int, float, etc) are
     fundamental.
-    \item Integer multiplication/division takes at least double time time than
+    \item Integer multiplication/division takes at least double time than
     operations on integers only.
     \item The amount of loops make a difference.
     \item Consulting variables also makes a difference.
@@ -23,3 +25,9 @@
 
 \subsection{Future work}
 
+\begin{itemize}
+    \item Use ADC interrupt in asynchronous mode to find out the maximum sample rate
+    the microcontroller can achieve and compare with specifications.
+    \item Make use of 10-bit ADC input and adapt tests for performing 2 byte operations. We can expect each operation to cost much more time becaue of the 8 bit nature of the processor.
+     \item Try to determine the the amount of noise introduced in the signal by the ADC sampling/PWM synthesis process.
+\end{itemize}

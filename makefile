@@ -4,9 +4,9 @@ all: $(pdfname)
 
 $(pdfname): article.tex *.tex
 	pdflatex -shell-escape -halt-on-error -jobname $(@:.pdf=) $<
-#	bibtex `basename $@ .pdf`
+	bibtex `basename $@ .pdf`
 #	makeglossaries `basename $@ .pdf`
-#	pdflatex -halt-on-error -jobname $(@:.pdf=) $<
+	pdflatex -halt-on-error -jobname $(@:.pdf=) $<
 	pdflatex -shell-escape -halt-on-error -jobname $(@:.pdf=) $<
 
 clean:
